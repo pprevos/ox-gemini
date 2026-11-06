@@ -24,7 +24,6 @@
 
 ;; TODO:
 ;; Sublists aren't supported in gemini
-;; There's a trailing space after inline code samples
 ;; If you link a file to an absolute path, the links break
 ;; bare links don't work (e.g. directly linking https://google.com)
 
@@ -102,7 +101,7 @@ INFO is a plist."
 INPUT is either a '\\=src-block\\=' or '\\=example-block\\='
 element.  INFO is a plist."
   ;; there's a bug here where there's a trailing space in the ``
-  (format "`%s`" (org-export-format-code-default input info)))
+  (format "`%s`" (string-trim (org-export-format-code-default input info))))
 
 (defun org-gemini-code-block (src-block _contents info)
   "SRC-BLOCK is a codeblock.  INFO is a plist."
