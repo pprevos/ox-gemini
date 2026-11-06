@@ -51,6 +51,11 @@
                      (template . org-gemini-template)
                      (table . org-gemini-table)))
 
+(defcustom org-gemini-link-symbol '("[" "]")
+  "Configure opening and closing indicators for links in paragraphs."
+  :group 'org-export-gemini
+  :type '(list string string))
+
 (defun org-gemini-paragraph (_paragraph contents _info)
   "CONTENTS is the text of the paragraph."
   (concat (replace-regexp-in-string "\n" " " contents)
@@ -118,19 +123,14 @@ INFO is a plist."
    (when (car links)
      "\n")))
 
-
-(defun org-gemini-link (link desc _info)
-  "Simple link generation.
-
-LINK is the url itself
-DESC is the link text
-
-Note: the footer with the actual links are handled in
-`org-gemini--describe-links'."
-  (if (org-string-nw-p desc)
-      (format "[%s]" desc)
-      (format "[%s]" (org-element-property :raw-link link))))
-
+(defun org-gemini-link (link description _info)
+  "Simple LINK with DESCRIPTION, marked in `org-gemini-link-symbol'.
+The footer with the active links are handled in `org-gemini--describe-links'."
+  (if (org-string-nw-p description)
+      (format "%s%s%s"
+              (car org-gemini-link-symbol)
+              description
+              (cadr org-gemini-link-symbol))))
 
 (defun org-gemini-section (section contents info)
   "Transcode a SECTION element from Org to GEMINI.
