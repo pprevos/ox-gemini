@@ -40,6 +40,7 @@
             (lambda (a s v b)
               (org-gemini-export-to-file a s v b nil)))))
   :translate-alist '((quote-block . org-gemini-quote-block)
+		     (example-block . org-gemini-example-block)
                      (code . org-gemini-code-inline)
                      (export-block . org-gemini-export-block)
                      (paragraph . org-gemini-paragraph)
@@ -81,6 +82,19 @@ ITEM is the parsed-org element with all properties."
   (replace-regexp-in-string
    "^" "> "
    (replace-regexp-in-string "\n\\'" "" contents)))
+
+(defun org-gemini-example-block (example-block _contents info)
+  "Transcode EXAMPLE-BLOCK into a Gemtext preformatted block.
+INFO is a plist."
+  (let* ((caption (org-export-get-caption example-block))
+         (name (or (and caption (org-export-data caption info))
+                   (org-element-property :name example-block)
+                   ""))
+         (alt (if (org-string-nw-p name) (concat " " (string-trim name)) ""))
+         (value (org-element-property :value example-block)))
+    (format "```%s\n%s```\n\n"
+            alt
+            (if (string-suffix-p "\n" value) value (concat value "\n")))))
 
 (defun org-gemini-code-inline (input _contents info)
   "Generate an inline code in Gemtext from the parsed INPUT.
