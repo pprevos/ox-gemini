@@ -138,13 +138,15 @@ INFO is a plist."
      "\n")))
 
 (defun org-gemini-link (link description _info)
-  "Simple LINK with DESCRIPTION, marked in `org-gemini-link-symbol'.
-The footer with the active links are handled in `org-gemini--describe-links'."
-  (if (org-string-nw-p description)
-      (format "%s%s%s"
-              (car org-gemini-link-symbol)
-              description
-              (cadr org-gemini-link-symbol))))
+  "Simple LINK with DESCRIPTION, marked with `org-gemini-link-symbol'.
+The footer with the active links is handled in `org-gemini--describe-links'."
+  (let ((desc (if (org-string-nw-p description)
+		  description
+		(org-element-property :raw-link link))))
+    (format "%s%s%s"
+            (car org-gemini-link-symbol)
+            desc
+            (cadr org-gemini-link-symbol))))
 
 (defun org-gemini-section (section contents info)
   "Transcode a SECTION element from Org to GEMINI.
