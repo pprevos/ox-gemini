@@ -154,23 +154,21 @@ contextual information."
         (if (or (not headline) (org-export-low-level-p headline info)) 0
           (plist-get info :ascii-inner-margin))))))
 
-(defun org-gemini--build-title
-    (element info _text-width &optional _underline _notags toc)
-    "Build a title heading.
+(defun org-gemini--build-title (element info _text-width &optional _underline _notags toc)
+  "Format an Org headline ELEMENT as a Gemtext heading line.
+The heading level is offset by +1 (Org level 1 `*` `##`, limited to 3.
 
-ELEMENT is an org-element.  TOC is whether to show the table of contents.
-INFO is unimportant."
-  (let ((number (org-element-property :level element))
-        (text
-         (org-trim
-          (org-export-data
-           (if toc
-               (org-export-get-alt-title element info)
-             (org-element-property :title element))
-           info))))
-
-    (format "%s %s" (make-string number ?#) text)))
-
+ELEMENT is the headline AST node.
+INFO is a plist holding export options and document state.
+_TEXT-WIDTH, _UNDERLINE, and _NOTAGS are inherited from `ox-ascii' and unused.
+TOC, when non-nil, indicates the title is being formatted for a table of
+contents entry and prefers alternate titles (:alt-title)."
+  (let* ((level (min 3 (1+ (org-element-property :level element))))
+         (title-data (if toc
+                         (org-export-get-alt-title element info)
+                       (org-element-property :title element)))
+         (text (org-trim (org-export-data title-data info))))
+    (format "%s %s" (make-string level ?#) text)))
 
 (defun org-gemini-headline (headline contents info)
   "Transcode a HEADLINE element from Org to GEMINI.
