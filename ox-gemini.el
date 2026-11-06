@@ -50,7 +50,8 @@
                      (src-block . org-gemini-code-block)
                      (item . org-gemini-item)
                      (template . org-gemini-template)
-                     (table . org-gemini-table)))
+                     (table . org-gemini-table)
+		     (export-snippet . ews-gemini-export-snippet)))
 
 (defcustom org-gemini-link-symbol '("[" "]")
   "Configure opening and closing indicators for links in paragraphs."
@@ -331,6 +332,12 @@ properties.  INFO is a plist with export options."
             (or name "")
             (org-ascii-table table contents info))))
 
+(defun ews-gemini-export-snippet (snippet _contents _info)
+  "Transcode an Org export SNIPPET into Gemtext, e.g. @@gmi:=> link@@.
+Supports snippets targeted to gemini, gmi, or gemtext (case-insensitive)."
+  (when (member (downcase (symbol-name (org-export-snippet-backend snippet)))
+                '("gemini" "gmi" "gemtext"))
+    (org-element-property :value snippet)))
 
 (provide 'ox-gemini)
 ;;; ox-gemini.el ends here
