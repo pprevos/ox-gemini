@@ -38,6 +38,8 @@
         (?f "To file"
             (lambda (a s v b)
               (org-gemini-export-to-file a s v b nil)))))
+  :options-alist
+  '((:ascii-headline-spacing nil nil '(0 . 1)))
   :translate-alist '((quote-block . org-gemini-quote-block)
 		     (example-block . org-gemini-example-block)
                      (code . org-gemini-code-inline)
@@ -63,7 +65,7 @@
 
 (defun org-gemini-paragraph (_paragraph contents _info)
   "CONTENTS is the text of the paragraph."
-  (concat (replace-regexp-in-string "\n" " " contents)
+  (concat (replace-regexp-in-string "\n" " " (string-trim-right contents))
           "\n"))
 
 (defun org-gemini-item (item contents info)
@@ -96,7 +98,7 @@ INFO is a plist."
                    ""))
          (alt (if (org-string-nw-p name) (concat " " (string-trim name)) ""))
          (value (org-element-property :value example-block)))
-    (format "```%s\n%s```\n\n"
+    (format "```%s\n%s```"
             alt
             (if (string-suffix-p "\n" value) value (concat value "\n")))))
 
@@ -169,9 +171,7 @@ INFO is a plist."
                                       (or desc (org-element-property :raw-link link))
                                       info))))
         (format "=> %s\^I%s\n" (url-encode-url path) (or anchor path))))
-    links "")
-   (when (car links)
-     "\n")))
+    links "")))
 
 (defun org-gemini-link (link description _info)
   "Simple LINK with DESCRIPTION, marked with `org-gemini-link-symbol'.
@@ -200,7 +200,7 @@ contextual information."
                info))))
     (org-remove-indentation
       (if (not (org-string-nw-p links)) contents-str
-        (concat (org-element-normalize-string contents-str) "\n\n" links))
+        (concat (org-element-normalize-string contents-str) "\n" links))
       ;; Do not apply inner margin if parent headline is low level.
       (let ((headline (org-export-get-parent-headline section)))
         (if (or (not headline) (org-export-low-level-p headline info)) 0
@@ -235,11 +235,10 @@ holding contextual information."
            ;; exported and seen in `org-ascii--unique-links'.
            (title (org-gemini--build-title headline info width (not low-level)))
            ;; Blank lines between headline and its contents.
-           ;; `org-ascii-headline-spacing', when set, overwrites
-           ;; original buffer's spacing.
+           ;; Prefer original buffer's spacing; fallback to `org-ascii-headline-spacing'.
            (pre-blanks
-            (make-string (or (car (plist-get info :ascii-headline-spacing))
-                             (org-element-property :pre-blank headline)
+            (make-string (or (org-element-property :pre-blank headline)
+                             (car (plist-get info :ascii-headline-spacing))
                              0)
                          ?\n))
            (links (and (plist-get info :ascii-links-to-notes)
@@ -256,7 +255,7 @@ holding contextual information."
                 (concat (and section
                              (concat (org-element-normalize-string
                                       (org-export-data section info))
-                                     "\n\n"))
+                                     "\n"))
                         links
                         (mapconcat (lambda (e) (org-export-data e info))
                                    (if section (cdr contents) contents)
