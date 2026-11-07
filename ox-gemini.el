@@ -41,6 +41,10 @@
   :translate-alist '((quote-block . org-gemini-quote-block)
 		     (example-block . org-gemini-example-block)
                      (code . org-gemini-code-inline)
+		     (bold . org-gemini-bold)
+                     (italic . org-gemini-italic)
+                     (underline . org-gemini-underline)
+                     (strike-through . org-gemini-strike-through)
                      (export-block . org-gemini-export-block)
                      (paragraph . org-gemini-paragraph)
                      (headline . org-gemini-headline)
@@ -102,6 +106,38 @@ INPUT is either a '\\=src-block\\=' or '\\=example-block\\='
 element.  INFO is a plist."
   ;; there's a bug here where there's a trailing space in the ``
   (format "`%s`" (string-trim (org-export-format-code-default input info))))
+
+(defun org-gemini--format-emphasized (text-style contents info)
+  "Format CONTENTS according to TEXT-STYLE and INFO plist.
+When `:with-emphasize' is non-nil, strip markers; otherwise format
+with TEXT-STYLE."
+  (if (plist-get info :with-emphasize)
+      contents
+    (format text-style contents)))
+
+(defun org-gemini-bold (_bold contents info)
+  "Transcode BOLD from Org to Gemini.
+CONTENTS is the text with bold markup.  INFO is a plist holding
+contextual information."
+  (org-gemini--format-emphasized "*%s*" contents info))
+
+(defun org-gemini-italic (_italic contents info)
+  "Transcode ITALIC from Org to Gemini.
+CONTENTS is the text with italic markup.  INFO is a plist holding
+contextual information."
+  (org-gemini--format-emphasized "/%s/" contents info))
+
+(defun org-gemini-underline (_underline contents info)
+  "Transcode UNDERLINE from Org to Gemini.
+CONTENTS is the text with underline markup.  INFO is a plist holding
+contextual information."
+  (org-gemini--format-emphasized "_%s_" contents info))
+
+(defun org-gemini-strike-through (_strike-through contents info)
+  "Transcode STRIKE-THROUGH from Org to Gemini.
+CONTENTS is the text with strike-through markup.  INFO is a plist holding
+contextual information."
+  (org-gemini--format-emphasized "+%s+" contents info))
 
 (defun org-gemini-code-block (src-block _contents info)
   "SRC-BLOCK is a codeblock.  INFO is a plist."
